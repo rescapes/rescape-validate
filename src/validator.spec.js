@@ -1,6 +1,7 @@
 const R = require('ramda');
 const {v, vMergeScope} = require('./validator');
 const prettyFormat = require('pretty-format');
+const PropTypes = require('prop-types');
 
 /**
  * Created by Andy Likuski on 2017.08.16
@@ -95,4 +96,18 @@ describe('scope validation', () => {
       ])
     );
   });
+
+  test('validate prop types', () => {
+    const myPropTypes = {
+      name: PropTypes.string,
+      age: PropTypes. number,
+      // ... define your prop validations
+    };
+
+    const props = {
+      name: 'hello', // is valid
+      age: 'world', // not valid
+    };
+    PropTypes.checkPropTypes(myPropTypes, props, 'prop', 'MyComponent');
+  })
 });

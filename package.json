@@ -34,6 +34,7 @@
   "dependencies": {
     "data.maybe": "^1.2.2",
     "pretty-format": "^20.0.3",
+    "prop-types": "^15.5.10",
     "ramda": "^0.24.1",
     "ramda-fantasy": "^0.8.0",
     "ramda-fantasy-validation": "^0.2.0",
