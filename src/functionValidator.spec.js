@@ -1,7 +1,5 @@
 const R = require('ramda');
-const {v, vMergeScope} = require('./validator');
-const prettyFormat = require('pretty-format');
-const PropTypes = require('prop-types');
+const {v} = require('./functionValidator');
 
 /**
  * Created by Andy Likuski on 2017.08.16
@@ -14,7 +12,7 @@ const PropTypes = require('prop-types');
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-describe('argument validator', () => {
+describe('functionValidator', () => {
   const func = R.curry((type, ret, obj) => ({good: 'job'}));
 
   /**
@@ -49,65 +47,4 @@ describe('argument validator', () => {
       ])
     );
   });
-});
-
-describe('scope validation', () => {
-  const scope = {user: 1, project: 2};
-  test('scope validator successful', () => {
-    // Values must match or be undefined
-    const actual = {aardvark: 9, user: 1};
-    expect(
-      vMergeScope(scope, actual)
-    ).toEqual(
-      R.merge(actual, scope)
-    );
-  });
-
-  test('scope validator with objects successful', () => {
-    // Values' ids must match the scope values or be undefined
-    const actual = {aardvark: {id: 9}, user: {id: 1}};
-    expect(
-      vMergeScope(scope, actual)
-    ).toEqual(
-      R.merge(actual, scope)
-    );
-  });
-
-  test('validator failing', () => {
-    const actual = {aardvark: 9, user: 5, project: 7};
-    expect(
-      () => vMergeScope(scope, actual)
-    ).toThrow(
-      new Error([
-        `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
-        `${prettyFormat(actual)}, Requires project to equal 2, but got 7`
-      ])
-    );
-  });
-
-  test('validator with objects failing', () => {
-    const actual = {aardvark: {id: 9}, user: {id: 5}, project: {id: 7}};
-    expect(
-      () => vMergeScope(scope, actual)
-    ).toThrow(
-      new Error([
-        `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
-        `${prettyFormat(actual)}, Requires project to equal 2, but got 7`
-      ])
-    );
-  });
-
-  test('validate prop types', () => {
-    const myPropTypes = {
-      name: PropTypes.string,
-      age: PropTypes. number,
-      // ... define your prop validations
-    };
-
-    const props = {
-      name: 'hello', // is valid
-      age: 'world', // not valid
-    };
-    PropTypes.checkPropTypes(myPropTypes, props, 'prop', 'MyComponent');
-  })
 });
