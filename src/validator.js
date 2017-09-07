@@ -50,20 +50,20 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) =>
   // useWith applies the results of all the validate calls to Validation.liftAN,
   // which in turn returns a Validation.failure or else calling func and wrapping the result in a Validation.success
   R.ifElse(
-    () => R.equals(R.length(func), R.length(expectedItems)),
-    () => R.useWith(
-      Validation.liftAN(R.length(expectedItems), func),
+    R.equals(R.length(func)),
+    R.useWith(
+      Validation.liftAN(R.__, func),
       R.map(([expectedKey, expectedValue]) => itemValidator(descriptor, expectedKey, expectedValue), expectedItems)
     ),
     // Return a function here since this will be called with the actual
     // parameters, which we'll ignore. It would be better to short-circuit
     // the Compose call in vEither but I don't want to deal with this special Validation container
-    () => () => Validation.failure(
-      `Function ${func.name}: argument length ${R.length(func)} is not matched by validators' length ${R.length(expectedItems)}:\n${prettyFormat(expectedItems)})`
+    length => () => Validation.failure(
+      `Function ${func.name}: argument length ${R.length(func)} is not matched by validators' length ${length}:\n${prettyFormat(expectedItems)})`
     )
-  )();
+  )(R.length(expectedItems));
 
-// See validateItems. This simply converts Validation to Either
+// See validateItems. This simply converts Validation to Either an maintains the curryability
 const validateItemsEither = (func, expectedItems, itemValidator, descriptor) =>
   // Return a function that curries until all of func's arguments are received
   R.curryN(
@@ -133,27 +133,25 @@ module.exports.vMergeScope = R.curry((scope, obj) => {
   const toValues = o => R.map(key => o[key], keys);
   const ln = R.length(keys);
   const actualValues = toValues(obj);
-  return R.curryN(
-    ln,
-    R.compose(
-      throwIfLeft,
-      // Pass actual so we can dump the object in an Error message
-      validateItemsEither(
-        // The merge function
-        // Convert object to pairs to make function expecting that many arguments and
-        // returning the merge of the obj and scope
-        // This matches the expected signature of validateItemsEither, which expects
-        // to apply the each argument to a function so that it can accumulate validation errors
-        R.curryN(ln, (...values) => R.merge(obj, scope)),
-        // expected items
-        toPairs(scope),
-        // function to evaluate each item
-        validateProp,
-        // Use the object as the descriptor
-        obj
-      )
+  // Call validateItemsEither and then throw if the Either is an Either.Left, meaning an error occured
+  return R.compose(
+    throwIfLeft,
+    // Pass actual so we can dump the object in an Error message
+    validateItemsEither(
+      // The merge function
+      // Convert object to pairs to make function expecting that many arguments and
+      // returning the merge of the obj and scope
+      // This matches the expected signature of validateItemsEither, which expects
+      // to apply the each argument to a function so that it can accumulate validation errors
+      R.curryN(ln, () => R.merge(obj, scope)),
+      // expected items
+      toPairs(scope),
+      // function to evaluate each item
+      validateProp,
+      // Use the object as the descriptor
+      obj
     )
-  )(...actualValues);
+  )(actualValues);
 });
 
 /**
@@ -179,10 +177,33 @@ const validateProp = R.curry((obj, prop, expected, actual) =>
   )(R.propOr(actual, 'id', actual))
 );
 
-const validateObject = (expectedItems, itemValidator, descriptor) =>
-  R.mapObjIndexed((expectedValue, expectedKey) => itemValidator(descriptor, expectedKey, expectedValue), expectedItems)
+/**
+ * Validates each key/value of an object against the expectedItems
+ * @param {Object} expectedItems An objects of items to match. This need not be matching values, but could instead
+ * be PropTypes or something similar. The passed in object contain all expectedItems if they are not required.
+ * This is determined by the itemValidator, which is called for each expectedItem
+ * @param {Function} itemValidator Function with arguments (componentName, propName, propValue, prop),
+ * where componentName is a descriptor for error messages, propNmae is the expected object key, propValue is the
+ * expected object value or propType, and prop is the actual value
+ * @param {String} componentName Descriptor of the object or component being evaluated. Used only for error messages
+ * @param {Object} props Actual props to validate
+ * @returns {Function} A function that takes on argument, the object to validate, and returns a Validation
+ * object containing the object if successful and an array of errors if unsuccessful
+ */
+const validateObject = (expectedItems, itemValidator, componentName, props) =>
+  R.useWith(
+    // Lift the expected number of Validation objects.
+    // If all successful just return the props in a Validation.Success
+    Validation.liftAN(R.length(expectedItems), () => props),
+    // Map each pair to the itemValidator, each of which returns a Validation.success or Validation.failure
+    R.map(
+      ([expectedKey, expectedValue]) => itemValidator(componentName, expectedKey, expectedValue),
+      R.toPairs(expectedItems)
+    )
+  );
 
-const validateObjectEither = (expectedItems, itemValidator, descriptor) =>
+// Like validateObject but converts Validation objects to Either
+const validateObjectEither = (expectedItems, itemValidator, componentName) =>
   R.compose(
     // Then fold the Validation.Success|Failure into Either.Right|Left
     // (predefined fold function has an error in it)
@@ -192,13 +213,17 @@ const validateObjectEither = (expectedItems, itemValidator, descriptor) =>
       obj => Either.Right(obj.value),
       obj => Either.Left(obj.value)),
     // Pass all the arguments to the result of this validator function
-    validateObject(func, expectedItems, itemValidator, descriptor)
+    validateObject(componentName, expectedItems, itemValidator)
   );
 
 /**
  * Validates an object's props against a prop-types object
+ * @param {[Function]} propTypes PropTypes to validate the props
+ * @param {*} props The object of props to validate
+ * @param {String} [componentName] Default 'Unspecified', a name or the object being validated
+ * @returns {Object} The props
  */
-module.exports.vProps = (propTypes, props, componentName='Unspecified') =>
+module.exports.vProps = (propTypes, props, componentName = 'Unspecified') =>
   R.compose(
     throwIfLeft,
     // Pass actual so we can dump the object in an Error message
@@ -214,24 +239,30 @@ module.exports.vProps = (propTypes, props, componentName='Unspecified') =>
       checkPropType,
       componentName
     )
-  )(props)
-);
-
+  )(props);
 
 /**
  * Modified from https://github.com/facebook/prop-types/issues/34
- * @param {String} componentName
- * @param {String} propName
- * @param {Function} propType
- * @param {Object} prop
- * @returns [Validation] Validation success or failure
+ * @param {String} componentName A descriptor of the object being validated
+ * @param {String} propName The key of the object to validate
+ * @param {Function} propType The PropType function
+ * @param {Object} props The object to validate
+ * @returns {Validation} Validation success or failure
  */
-const checkPropType = (componentName, propName, propType, prop) => {
-  if (typeof(propType) !== 'function')
+const checkPropType = (componentName, propName, propType, props) => {
+  if (typeof (propType) !== 'function') {
     return Validation.failure('TypeChecker should be a function');
-  const error = propType([prop], propName, componentName, 'location', null, 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
+  }
+  const error = propType(
+    props,
+    propName,
+    componentName,
+    null,
+    'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
   // specified using prop-types version 15.5.8 only in package.json
-  if (error instanceof Error)
-    return Validation.failure(`Failed ${prop} for component ${componentName} type: ${error.message}`);
-  return Validation.success(prop)
-}
+  if (error instanceof Error) {
+    return Validation.failure(`Failed ${propName} for component ${componentName} type: ${error.message}`);
+  }
+  // This value is discarded
+  return Validation.success()
+};
