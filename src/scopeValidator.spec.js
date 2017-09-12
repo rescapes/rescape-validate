@@ -39,7 +39,7 @@ describe('scope validation', () => {
     expect(
       () => vMergeScope(scope, actual)
     ).toThrow(
-      new Error([
+      R.join(', ', [
         `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
         `${prettyFormat(actual)}, Requires project to equal 2, but got 7`
       ])
@@ -51,7 +51,7 @@ describe('scope validation', () => {
     expect(
       () => vMergeScope(scope, actual)
     ).toThrow(
-      new Error([
+      R.join(', ', [
         `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
         `${prettyFormat(actual)}, Requires project to equal 2, but got 7`
       ])

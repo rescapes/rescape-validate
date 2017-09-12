@@ -33,7 +33,7 @@ module.exports.vMergeScope = R.curry((scope, obj) => {
   const actualValues = toValues(obj);
   // Call validateItemsEither and then throw if the Either is an Either.Left, meaning an error occured
   return R.compose(
-    mappedThrowIfLeft(error => `${prettyFormat(error.obj)}, Requires ${error.prop} to equal ${prettyFormat(error.expected)}, but got ${prettyFormat(error.value)}`),
+    mappedThrowIfLeft(error => `${prettyFormat(error.obj)}, Requires ${error.prop} to equal ${prettyFormat(error.expected)}, but got ${prettyFormat(error.actual)}`),
     // Pass actual as variadic arguments tot he resulting function of validateItemsEither
     // so we can dump the object in an Error message
     R.apply(validateItemsEither(
@@ -71,7 +71,7 @@ const validateProp = R.curry((obj, prop, expected, actual) =>
     // Wrap in Validation
     Validation.of,
     // Create a Validation failure
-    val => Validation.failure([{obj, prop, expected, actual}])
+    val => Validation.failure([{obj, prop, expected, actual: val}])
     // If actual is an object with an id, map it to the id. Otherwise assume it's a primitive
   )(R.propOr(actual, 'id', actual))
 );
