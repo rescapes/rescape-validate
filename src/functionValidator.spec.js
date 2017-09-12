@@ -1,5 +1,6 @@
 const R = require('ramda');
 const {v} = require('./functionValidator');
+const PropType = require('prop-types');
 
 /**
  * Created by Andy Likuski on 2017.08.16
@@ -21,14 +22,15 @@ describe('functionValidator', () => {
    * or Validation.failure depending on if the right type
    * of arguments are passed in or not.
    */
-  const validateFunc = v(func, [
+  const validateTypesFunc = v(func, [
     ['type', [String]],
     ['ret', [Object, String]],
     ['obj', [Object]]
   ], 'funky');
 
-  test('argument validator successful', () => {
-    const fooValidateFunc = validateFunc('FOO', {foo: 'foo', bar: 'bar'});
+
+  test('argument as type validator successful', () => {
+    const fooValidateFunc = validateTypesFunc('FOO', {foo: 'foo', bar: 'bar'});
     expect(
       fooValidateFunc({foo: 'foo', bar: 'bar', zar: 'zar'})
     ).toEqual(
@@ -36,14 +38,40 @@ describe('functionValidator', () => {
     );
   });
 
-  test('argument validator failing', () => {
+  test('argument as type validator failing', () => {
     expect(
-      () => validateFunc(null, 1, null)
+      () => validateTypesFunc(null, 1, null)
     ).toThrow(
-      new Error([
+      R.join(', ', [
         'Function funky, Requires type as one of String, but got null',
         'Function funky, Requires ret as one of Object, String, but got 1',
         'Function funky, Requires obj as one of Object, but got null'
+      ])
+    );
+  });
+
+  const validatePropTypesFunc = v(func, [
+    ['type', PropType.string.isRequired],
+    ['ret', PropType.oneOf(PropType.object, PropType.string)],
+    ['obj', PropType.object.isRequired]
+    ], 'funky');
+
+  test('argument as propType validator successful', () => {
+    const fooValidateFunc = validatePropTypesFunc('FOO', {foo: 'foo', bar: 'bar'});
+    expect(
+      fooValidateFunc({foo: 'foo', bar: 'bar', zar: 'zar'})
+    ).toEqual(
+      {good: 'job'}
+    );
+  });
+
+  test('argument as propType validator failing', () => {
+    expect(
+      () => validatePropTypesFunc(null, 1, null)
+    ).toThrow(
+      R.join(', ', [
+        'The location `type` is marked as required in `Function funky, argument type`, but its value is `null`.',
+        'The location `obj` is marked as required in `Function funky, argument obj`, but its value is `null`.',
       ])
     );
   });

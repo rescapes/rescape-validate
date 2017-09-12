@@ -12,7 +12,7 @@
 const Validation = require('ramda-fantasy-validation');
 const R = require('ramda');
 const {Either} = require('ramda-fantasy');
-const {throwIfLeft} = require('rescape-ramda').throwing;
+const {mappedThrowIfLeft} = require('rescape-ramda').throwing;
 
 /**
  * Validates each key/value of an object against the expectedItems
@@ -61,23 +61,38 @@ const validateObjectEither = R.curry((itemValidator, componentName, expectedItem
 
 /**
  * Validates an object's props against a prop-types object
- * @param {Object} propTypes PropTypes to validate the props
+ * @param {Object} propTypes PropTypes to validate the props, keyed by prop and valued by PropType
+ * @param {String} componentName The name of the component being validated, used only for error messages
  * @param {*} props The object of props to validate
- * @param {String} [componentName] Default 'Unspecified', a name or the object being validated
  * @returns {Object} The props
  */
-module.exports.vProps = (propTypes, props, componentName = 'Unspecified') =>
+module.exports.vProps = R.curry((propTypes, componentName, props) =>
   R.compose(
-    throwIfLeft,
+    // If Either.Left, map each Error value within Either to a useful message and then throw
+    mappedThrowIfLeft(error => `Failed ${error.propName} for ${error.componentName} type: ${error.message}`),
     // Pass actual so we can dump the object in an Error message
     validateObjectEither(
       // function to check
-      checkPropType,
+      validatePropType,
       componentName,
       // expected types
       propTypes,
     )
-  )(props);
+  )(props)
+);
+
+/**
+ * Validates a function argument based on a PropType, returning a Validation
+ * @param {Object} propType PropType function to validate the prop value
+ * @param {String} funcName The name of the function being validated, used only for error messages
+ * @param {String} name The name of the argument being validated, used only for error messages
+ * @param {Object} actual. The actual value to validate again the PropType
+ * @returns {Object} The props
+ *
+ */
+module.exports.vPropOfFunction = R.curry((propType, funcName, name, actual) =>
+  validateObject(validatePropType, `Function ${funcName}, argument ${name}`, {[name]:propType}, {[name]: actual})
+);
 
 /**
  * Modified from https://github.com/facebook/prop-types/issues/34
@@ -87,9 +102,13 @@ module.exports.vProps = (propTypes, props, componentName = 'Unspecified') =>
  * @param {Object} props The object to validate
  * @returns {Validation} Validation success or failure
  */
-const checkPropType = R.curry((componentName, propName, propType, props) => {
+const validatePropType = module.exports.validatePropType = R.curry((componentName, propName, propType, props) => {
   if (typeof (propType) !== 'function') {
-    return Validation.failure('TypeChecker should be a function');
+    return Validation.failure([{
+      componentName,
+      propName,
+      message: 'TypeChecker should be a function'
+    }]);
   }
   const error = propType(
     props,
@@ -100,7 +119,12 @@ const checkPropType = R.curry((componentName, propName, propType, props) => {
     'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
   // specified using prop-types version 15.5.8 only in package.json
   if (error instanceof Error) {
-    return Validation.failure(`Failed ${propName} for component ${componentName} type: ${error.message}`);
+    return Validation.failure([{
+      componentName,
+      propName,
+      propType,
+      message: error.message
+    }]);
   }
   // This value is discarded
   return Validation.of([propName, props[propName]]);

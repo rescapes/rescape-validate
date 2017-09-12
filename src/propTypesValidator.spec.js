@@ -23,14 +23,14 @@ describe('propTypesValidator', () => {
       name: 'hello',
       age: 2
     };
-    expect(vProps(myPropTypes, props, 'Snoopy')).toEqual(props);
+    expect(vProps(myPropTypes, 'Snoopy', props)).toEqual(props);
   });
 
   test('validate passing only required prop types', () => {
     const props = {
       age: 2
     };
-    expect(vProps(myPropTypes, props, 'Snoopy')).toEqual(props);
+    expect(vProps(myPropTypes, 'Snoopy', props)).toEqual(props);
   });
 
   test('validate prop types error', () => {
@@ -38,7 +38,7 @@ describe('propTypesValidator', () => {
       name: 'hello', // is valid
       age: 'world' // not valid
     };
-    expect(() => vProps(myPropTypes, props, 'Snoopy')).toThrow(
+    expect(() => vProps(myPropTypes, 'Snoopy', props)).toThrow(
       new Error([
         'Failed age for component Snoopy type: Invalid location `age` of type `string` supplied to `Snoopy`, expected `number`.'
       ])
@@ -49,10 +49,10 @@ describe('propTypesValidator', () => {
     const props = {
       name: 'hello'
     };
-    expect(() => vProps(myPropTypes, props, 'Snoopy')).toThrow(
+    expect(() => vProps(myPropTypes, 'Snoopy', props)).toThrow(
       new Error([
         'Failed age for component Snoopy type: The location `age` is marked as required in `Snoopy`, but its value is `undefined`.'
       ])
-    );
+    )
   });
 });

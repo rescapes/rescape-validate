@@ -39,7 +39,7 @@
     "ramda-fantasy": "^0.8.0",
     "ramda-fantasy-validation": "^0.2.0",
     "ramda-maybe": "^0.18.0",
-    "rescape-ramda": "^1.0.7"
+    "rescape-ramda": "^1.1.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

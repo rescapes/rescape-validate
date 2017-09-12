@@ -11,7 +11,7 @@
 
 const Validation = require('ramda-fantasy-validation');
 const R = require('ramda');
-const {throwIfLeft} = require('rescape-ramda').throwing;
+const {mappedThrowIfLeft} = require('rescape-ramda').throwing;
 const prettyFormat = require('pretty-format');
 const {validateItemsEither} = require('./validatorHelpers');
 
@@ -33,7 +33,7 @@ module.exports.vMergeScope = R.curry((scope, obj) => {
   const actualValues = toValues(obj);
   // Call validateItemsEither and then throw if the Either is an Either.Left, meaning an error occured
   return R.compose(
-    throwIfLeft,
+    mappedThrowIfLeft(error => `${prettyFormat(error.obj)}, Requires ${error.prop} to equal ${prettyFormat(error.expected)}, but got ${prettyFormat(error.value)}`),
     // Pass actual as variadic arguments tot he resulting function of validateItemsEither
     // so we can dump the object in an Error message
     R.apply(validateItemsEither(
@@ -71,7 +71,7 @@ const validateProp = R.curry((obj, prop, expected, actual) =>
     // Wrap in Validation
     Validation.of,
     // Create a Validation failure
-    val => Validation.failure([`${prettyFormat(obj)}, Requires ${prop} to equal ${prettyFormat(expected)}, but got ${prettyFormat(val)}`])
+    val => Validation.failure([{obj, prop, expected, actual}])
     // If actual is an object with an id, map it to the id. Otherwise assume it's a primitive
   )(R.propOr(actual, 'id', actual))
 );
