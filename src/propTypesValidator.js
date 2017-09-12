@@ -91,7 +91,7 @@ module.exports.vProps = R.curry((propTypes, componentName, props) =>
  *
  */
 module.exports.vPropOfFunction = R.curry((propType, funcName, name, actual) =>
-  validateObject(validatePropType, `Function ${funcName}, argument ${name}`, {[name]:propType}, {[name]: actual})
+  validateObject(validatePropType, `Function ${funcName}, argument ${name}`, {[name]: propType}, {[name]: actual})
 );
 
 /**

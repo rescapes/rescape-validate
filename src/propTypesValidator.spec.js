@@ -53,6 +53,6 @@ describe('propTypesValidator', () => {
       new Error([
         'Failed age for component Snoopy type: The location `age` is marked as required in `Snoopy`, but its value is `undefined`.'
       ])
-    )
+    );
   });
 });

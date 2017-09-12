@@ -71,7 +71,7 @@ describe('functionValidator', () => {
     ).toThrow(
       R.join(', ', [
         'The location `type` is marked as required in `Function funky, argument type`, but its value is `null`.',
-        'The location `obj` is marked as required in `Function funky, argument obj`, but its value is `null`.',
+        'The location `obj` is marked as required in `Function funky, argument obj`, but its value is `null`.'
       ])
     );
   });
