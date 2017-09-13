@@ -45,8 +45,8 @@ const validateObject = R.curry((itemValidator, componentName, expectedItems, pro
 );
 
 // Like validateObject but converts Validation objects to Either
-const validateObjectEither = R.curry((itemValidator, componentName, expectedItems) => {
-  return R.compose(
+const validateObjectEither = R.curry((itemValidator, componentName, expectedItems) =>
+  R.compose(
     // Then fold the Validation.Success|Failure into Either.Right|Left
     // (predefined fold function has an error in it)
     // TODO this should be fixed now
@@ -57,7 +57,7 @@ const validateObjectEither = R.curry((itemValidator, componentName, expectedItem
     // Pass all the arguments to the result of this validator function
     validateObject(itemValidator, componentName, expectedItems)
   )
-});
+);
 
 /**
  * Validates an object's props against a prop-types object
