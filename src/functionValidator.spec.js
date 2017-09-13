@@ -52,7 +52,7 @@ describe('functionValidator', () => {
 
   const validatePropTypesFunc = v(func, [
     ['type', PropType.string.isRequired],
-    ['ret', PropType.oneOf(PropType.object, PropType.string)],
+    ['ret', PropType.oneOfType([PropType.object, PropType.string])],
     ['obj', PropType.object.isRequired]
     ], 'funky');
 
@@ -70,8 +70,9 @@ describe('functionValidator', () => {
       () => validatePropTypesFunc(null, 1, null)
     ).toThrow(
       R.join(', ', [
-        'The location `type` is marked as required in `Function funky, argument type`, but its value is `null`.',
-        'The location `obj` is marked as required in `Function funky, argument obj`, but its value is `null`.'
+        'The location `type` is marked as required in `funky`, but its value is `null`.',
+        'Invalid location `ret` supplied to `funky`.',
+        'The location `obj` is marked as required in `funky`, but its value is `null`.'
       ])
     );
   });

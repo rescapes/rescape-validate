@@ -45,8 +45,8 @@ const validateObject = R.curry((itemValidator, componentName, expectedItems, pro
 );
 
 // Like validateObject but converts Validation objects to Either
-const validateObjectEither = R.curry((itemValidator, componentName, expectedItems) =>
-  R.compose(
+const validateObjectEither = R.curry((itemValidator, componentName, expectedItems) => {
+  return R.compose(
     // Then fold the Validation.Success|Failure into Either.Right|Left
     // (predefined fold function has an error in it)
     // TODO this should be fixed now
@@ -57,7 +57,7 @@ const validateObjectEither = R.curry((itemValidator, componentName, expectedItem
     // Pass all the arguments to the result of this validator function
     validateObject(itemValidator, componentName, expectedItems)
   )
-);
+});
 
 /**
  * Validates an object's props against a prop-types object
@@ -72,6 +72,8 @@ module.exports.vProps = R.curry((propTypes, componentName, props) =>
     mappedThrowIfLeft(error => `Failed ${error.propName} for ${error.componentName} type: ${error.message}`),
     // Pass actual so we can dump the object in an Error message
     validateObjectEither(
+      // Used to validate each prop
+      validatePropType,
       // function to check
       componentName,
       // expected types
@@ -91,7 +93,7 @@ module.exports.vProps = R.curry((propTypes, componentName, props) =>
  */
 module.exports.vPropOfFunction = R.curry((propType, funcName, name, actual) =>
   // Do a single PropType validation and map a success validation to the actual value that was tested
-  validatePropType(funcName, name, propType, actual).map(_ => actual)
+  validatePropType(funcName, name, propType, {[name]: actual}).map(_ => actual)
 );
 
 /**
