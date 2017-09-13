@@ -43,7 +43,6 @@ const validateObject = R.curry((itemValidator, componentName, expectedItems, pro
     ), R.toPairs(expectedItems));
   }
 );
-;
 
 // Like validateObject but converts Validation objects to Either
 const validateObjectEither = R.curry((itemValidator, componentName, expectedItems) =>
