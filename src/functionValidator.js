@@ -32,12 +32,20 @@ const {vPropOfFunction} = require('./propTypesValidator');
  */
 module.exports.v = (func, expectedItems, funcName = func.name) =>
   R.curryN(
+    // Curry based on func length. This lets us return a curried function that can take each of func's actual
+    // arguments in a curried manner
     func.length,
+    // This compose will act upon the arguments passed to func
     R.compose(
+      // Then, If validation failed we'll get an Either.Left with an Error object in it. Parse that object into a
+      // helpful message
       mappedThrowIfLeft(error =>
+        // Since we handle either Javascript types or PropTypes for validation, the two error objects spit out are
+        // different. In the latter case we get a complete error message from the PropTypes module
         error.types ?
           `Function ${error.funcName}, Requires ${error.name} as one of ${R.join(', ', R.map(t => R.type(t()), error.types))}, but got ${prettyFormat(error.actual)}` :
           `${error.message}`),
+      // First pass the arguments to the result of this function to validate each argument
       validateItemsEither(func, expectedItems, validateArgument, funcName)
     )
   );
@@ -54,7 +62,7 @@ module.exports.v = (func, expectedItems, funcName = func.name) =>
 const validateArgument = R.curry((funcName, name, typesOrPropType, actual) =>
   R.ifElse(
 
-    // If javascript types
+    // If javascript types they'll be in a array (e.g. [String, Number]
     R.is(Array),
 
     // Validate that actual matches one of the types or else fail
@@ -71,7 +79,7 @@ const validateArgument = R.curry((funcName, name, typesOrPropType, actual) =>
       ])
     )(actual),
 
-    // Otherwise validate the PropType
+    // Otherwise validate the PropType instance
     propType => vPropOfFunction(propType, funcName, name, actual)
   )(typesOrPropType)
 );

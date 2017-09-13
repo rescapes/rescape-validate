@@ -14,7 +14,7 @@ const PropType = require('prop-types');
  */
 
 describe('functionValidator', () => {
-  const func = R.curry((type, ret, obj) => ({good: 'job'}));
+  const func = R.curry((type, ret, obj) => ({type, ret, obj}));
 
   /**
    * Wraps a function in a validator.
@@ -34,7 +34,7 @@ describe('functionValidator', () => {
     expect(
       fooValidateFunc({foo: 'foo', bar: 'bar', zar: 'zar'})
     ).toEqual(
-      {good: 'job'}
+      {type: 'FOO', ret: {foo: 'foo', bar: 'bar'}, obj: {foo: 'foo', bar: 'bar', zar: 'zar'}}
     );
   });
 
@@ -61,7 +61,7 @@ describe('functionValidator', () => {
     expect(
       fooValidateFunc({foo: 'foo', bar: 'bar', zar: 'zar'})
     ).toEqual(
-      {good: 'job'}
+      {type: 'FOO', ret: {foo: 'foo', bar: 'bar'}, obj: {foo: 'foo', bar: 'bar', zar: 'zar'}}
     );
   });
 

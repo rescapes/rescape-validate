@@ -43,6 +43,7 @@ const validateObject = R.curry((itemValidator, componentName, expectedItems, pro
     ), R.toPairs(expectedItems));
   }
 );
+;
 
 // Like validateObject but converts Validation objects to Either
 const validateObjectEither = R.curry((itemValidator, componentName, expectedItems) =>
@@ -73,7 +74,6 @@ module.exports.vProps = R.curry((propTypes, componentName, props) =>
     // Pass actual so we can dump the object in an Error message
     validateObjectEither(
       // function to check
-      validatePropType,
       componentName,
       // expected types
       propTypes,
@@ -91,7 +91,8 @@ module.exports.vProps = R.curry((propTypes, componentName, props) =>
  *
  */
 module.exports.vPropOfFunction = R.curry((propType, funcName, name, actual) =>
-  validateObject(validatePropType, `Function ${funcName}, argument ${name}`, {[name]: propType}, {[name]: actual})
+  // Do a single PropType validation and map a success validation to the actual value that was tested
+  validatePropType(funcName, name, propType, actual).map(_ => actual)
 );
 
 /**
@@ -126,6 +127,7 @@ const validatePropType = module.exports.validatePropType = R.curry((componentNam
       message: error.message
     }]);
   }
-  // This value is discarded
-  return Validation.of([propName, props[propName]]);
+  // No value is passed. The caller should map Validation success to the original value passed,
+  // since some callers need to return the aggregate props
+  return Validation.of();
 });
