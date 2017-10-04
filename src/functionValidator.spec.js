@@ -1,6 +1,7 @@
 const R = require('ramda');
 const {v} = require('./functionValidator');
 const PropType = require('prop-types');
+const prettyFormat = require('pretty-format');
 
 /**
  * Created by Andy Likuski on 2017.08.16
@@ -74,6 +75,21 @@ describe('functionValidator', () => {
         'Invalid location `ret` supplied to `funky`.',
         'The location `obj` is marked as required in `funky`, but its value is `null`.'
       ])
+    );
+  });
+
+  test('Mismatch of function declaration and proptype declaration', () => {
+    const funky = R.curry((type, ret) => ({type, ret}));
+    const expectedItems = [
+      ['type', PropType.string.isRequired],
+      ['ret', PropType.oneOfType([PropType.object, PropType.string])],
+      ['obj', PropType.object.isRequired]
+    ];
+    expect(
+      // Even though the declaration causes an error, it's not thrown until we try to call the function with args
+      () => v(funky, expectedItems, 'funky')('dont', {matter: 'at all'})
+    ).toThrow(
+      `Function ${funky.name}: argument length ${R.length(funky)} is not matched by validators' length ${R.length(expectedItems)}:\n${prettyFormat(expectedItems)})`
     );
   });
 });
