@@ -49,7 +49,7 @@ const validateObjectEither = R.curry((itemValidator, componentName, expectedItem
   R.compose(
     // Then fold the Validation.Success|Failure into Either.Right|Left
     // (predefined fold function has an error in it)
-    // TODO this should be fixed now
+    // TODO it should be fixed now
     R.ifElse(
       obj => obj.isSuccess,
       obj => Either.Right(obj.value),
@@ -69,7 +69,7 @@ const validateObjectEither = R.curry((itemValidator, componentName, expectedItem
 module.exports.vProps = R.curry((propTypes, componentName, props) =>
   R.compose(
     // If Either.Left, map each Error value within Either to a useful message and then throw
-    mappedThrowIfLeft(error => `Failed ${error.propName} for ${error.componentName} type: ${error.message}`),
+    mappedThrowIfLeft(({propName, component, error: {message, stack}}) => `Failed ${propName} for ${componentName} type: ${message} stack: ${stack}`),
     // Pass actual so we can dump the object in an Error message
     validateObjectEither(
       // Used to validate each prop
@@ -106,13 +106,22 @@ module.exports.vPropOfFunction = R.curry((propType, funcName, name, actual) =>
  */
 const validatePropType = module.exports.validatePropType = R.curry((componentName, propName, propType, props) => {
   if (typeof (propType) !== 'function') {
-    return Validation.failure([{
-      componentName,
-      propName,
-      message: 'TypeChecker should be a function'
-    }]);
+    // Generate an error so we have a stack trace
+    let error = null;
+    try {
+      throw new Error('TypeChecker should be a function');
+    } catch(e) {
+      error = e;
+    }
+    return Validation.failure([
+      {
+        componentName,
+        propName,
+        error
+      }
+    ]);
   }
-  const error = propType(
+  const propTypeError = propType(
     props,
     propName,
     componentName,
@@ -120,13 +129,22 @@ const validatePropType = module.exports.validatePropType = R.curry((componentNam
     null,
     'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED');
   // specified using prop-types version 15.5.8 only in package.json
-  if (error instanceof Error) {
-    return Validation.failure([{
-      componentName,
-      propName,
-      propType,
-      message: error.message
-    }]);
+  if (propTypeError instanceof Error) {
+    // Generate an error so we have a stack trace
+    let error = null;
+    try {
+      throw new Error(propTypeError.message);
+    } catch(e) {
+      error = e;
+    }
+    return Validation.failure([
+      {
+        componentName,
+        propName,
+        propType,
+        error
+      }
+    ]);
   }
   // No value is passed. The caller should map Validation success to the original value passed,
   // since some callers need to return the aggregate props

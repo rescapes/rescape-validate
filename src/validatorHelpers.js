@@ -58,9 +58,21 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) =>
     // Return a function here since this will be called with the actual
     // parameters, which we'll ignore. It would be better to short-circuit
     // the Compose call in vEither but I don't want to deal with this special Validation container
-    len => () => Validation.failure([{
-      message: `Function ${func.name}: argument length ${R.length(func)} is not matched by validators' length ${len}:\n${prettyFormat(expectedItems)})`
-    }])
+    len => () => {
+      // Generate an error so we have a stack trace
+      let error = null;
+      try {
+        throw new Error('Validation error');
+      } catch(e) {
+        error = e;
+      }
+      return Validation.failure([
+        {
+          message: `Function ${func.name}: argument length ${R.length(func)} is not matched by validators' length ${len}:\n${prettyFormat(expectedItems)})`,
+          error
+        }
+      ]);
+    }
   )(R.length(expectedItems));
 
 // See validateItems. This simply converts Validation to Either an maintains the curryability

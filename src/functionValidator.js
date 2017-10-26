@@ -26,11 +26,11 @@ const {vPropOfFunction} = require('./propTypesValidator');
  *    arg1: PropType.String.isRequired,
  *    arg2:
  *  ]
- * @param {String} [funcName] Optional name of the function. Defaults to func.name
+ * @param {String} [functionName] Optional name of the function. Defaults to func.name
  * @returns {Function} A function expecting the actual arguments to validate, which in turn returns
  * a results of the function call (if valid) or throws if not
  */
-module.exports.v = (func, expectedItems, funcName = func.name) =>
+module.exports.v = (func, expectedItems, functionName = func.name) =>
   R.curryN(
     // Curry based on func length. This lets us return a curried function that can take each of func's actual
     // arguments in a curried manner
@@ -39,14 +39,14 @@ module.exports.v = (func, expectedItems, funcName = func.name) =>
     R.compose(
       // Then, If validation failed we'll get an Either.Left with an Error object in it. Parse that object into a
       // helpful message
-      mappedThrowIfLeft(error =>
+      mappedThrowIfLeft(({types, funcName, name, actual, error: {message, stack}}) =>
         // Since we handle either Javascript types or PropTypes for validation, the two error objects spit out are
         // different. In the latter case we get a complete error message from the PropTypes module
-        error.types ?
-          `Function ${error.funcName}, Requires ${error.name} as one of ${R.join(', ', R.map(t => R.type(t()), error.types))}, but got ${prettyFormat(error.actual)}` :
-          `${error.message}`),
+        types ?
+          `Function ${funcName}, Requires ${name} as one of ${R.join(', ', R.map(t => R.type(t()), types))}, but got ${prettyFormat(actual)}, stack ${stack}` :
+          `Error: ${message}, Stack: ${stack}`),
       // First pass the arguments to the result of this function to validate each argument
-      validateItemsEither(func, expectedItems, validateArgument, funcName)
+      validateItemsEither(func, expectedItems, validateArgument, functionName)
     )
   );
 
@@ -69,14 +69,24 @@ const validateArgument = R.curry((funcName, name, typesOrPropType, actual) =>
     types => R.ifElse(
       v => R.any(type => R.is(type, v), types),
       Validation.of,
-      _ => Validation.failure([
-        {
-          funcName,
-          name,
-          types,
-          actual
+      _ => {
+        // Generate an error so we have a stack trace
+        let error = null;
+        try {
+          throw new Error('Validation error');
+        } catch(e) {
+          error = e;
         }
-      ])
+        return Validation.failure([
+          {
+            funcName,
+            name,
+            types,
+            actual,
+            error
+          }
+        ]);
+      }
     )(actual),
 
     // Otherwise validate the PropType instance

@@ -25,15 +25,15 @@ const {validateItemsEither} = require('./validatorHelpers');
  * ids match the scope (e.g. {..., user: {name: 'kenny', id: 123}, project: {name: 'friendly', id: 456})
  * @returns {Object} The merged obj with the scope, or throws if any validation fails
  */
-module.exports.vMergeScope = R.curry((scope, obj) => {
+module.exports.vMergeScope = R.curry((scope, objct) => {
   const keys = R.keys(scope);
   const toPairs = o => R.map(key => [key, o[key]], keys);
   const toValues = o => R.map(key => o[key], keys);
   const ln = R.length(keys);
-  const actualValues = toValues(obj);
+  const actualValues = toValues(objct);
   // Call validateItemsEither and then throw if the Either is an Either.Left, meaning an error occured
   return R.compose(
-    mappedThrowIfLeft(error => `${prettyFormat(error.obj)}, Requires ${error.prop} to equal ${prettyFormat(error.expected)}, but got ${prettyFormat(error.actual)}`),
+    mappedThrowIfLeft(({obj, prop, expected, actual, error: {stack}}) => `${prettyFormat(obj)}, Requires ${prop} to equal ${prettyFormat(expected)}, but got ${prettyFormat(actual)}, stack: ${stack}`),
     // Pass actual as variadic arguments tot he resulting function of validateItemsEither
     // so we can dump the object in an Error message
     R.apply(validateItemsEither(
@@ -42,13 +42,13 @@ module.exports.vMergeScope = R.curry((scope, obj) => {
       // returning the merge of the obj and scope
       // This matches the expected signature of validateItemsEither, which expects
       // to apply the each argument to a function so that it can accumulate validation errors
-      R.curryN(ln, () => R.merge(obj, scope)),
+      R.curryN(ln, () => R.merge(objct, scope)),
       // expected items
       toPairs(scope),
       // function to evaluate each item
       validateProp,
       // Use the object as the descriptor
-      obj
+      objct
     ))
   )(actualValues);
 });
@@ -71,7 +71,24 @@ const validateProp = R.curry((obj, prop, expected, actual) =>
     // Wrap in Validation
     Validation.of,
     // Create a Validation failure
-    val => Validation.failure([{obj, prop, expected, actual: val}])
+    val => {
+      // Generate an error so we have a stack trace
+      let error = null;
+      try {
+        throw new Error('Validation error');
+      } catch(e) {
+        error = e;
+      }
+      return Validation.failure([
+        {
+          obj,
+          prop,
+          expected,
+          actual: val,
+          error
+        }
+      ]);
+    }
     // If actual is an object with an id, map it to the id. Otherwise assume it's a primitive
   )(R.propOr(actual, 'id', actual))
 );
