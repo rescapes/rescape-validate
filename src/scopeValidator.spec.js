@@ -11,6 +11,8 @@
 const R = require('ramda');
 const {vMergeScope} = require('./scopeValidator');
 const prettyFormat = require('pretty-format');
+const {expectValidationError} = require('./validatorHelpers');
+
 
 describe('scope validation', () => {
   const scope = {user: 1, project: 2};
@@ -36,25 +38,27 @@ describe('scope validation', () => {
 
   test('validator failing', () => {
     const actual = {aardvark: 9, user: 5, project: 7};
-    expect(
+    const errors = expectValidationError(
       () => vMergeScope(scope, actual)
-    ).toThrow(
-      R.join(', ', [
+    )
+    expect(errors).toEqual(
+      [
         `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
         `${prettyFormat(actual)}, Requires project to equal 2, but got 7`
-      ])
+      ]
     );
   });
 
   test('validator with objects failing', () => {
     const actual = {aardvark: {id: 9}, user: {id: 5}, project: {id: 7}};
-    expect(
+    const errors = expectValidationError(
       () => vMergeScope(scope, actual)
-    ).toThrow(
-      R.join(', ', [
+    )
+    expect(errors).toEqual(
+      [
         `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
         `${prettyFormat(actual)}, Requires project to equal 2, but got 7`
-      ])
-    );
+      ]
+    )
   });
 });

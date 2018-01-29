@@ -43,7 +43,7 @@ module.exports.v = (func, expectedItems, functionName = func.name) =>
         // Since we handle either Javascript types or PropTypes for validation, the two error objects spit out are
         // different. In the latter case we get a complete error message from the PropTypes module
         types ?
-          `Function ${funcName}, Requires ${name} as one of ${R.join(', ', R.map(t => R.type(t()), types))}, but got ${prettyFormat(actual)}, stack ${stack}` :
+          `Function ${funcName}, Requires ${name} as one of ${R.join(', ', R.map(t => R.type(t()), types))}, but got ${prettyFormat(actual)}, Stack: ${stack}` :
           `Error: ${message}, Stack: ${stack}`),
       // First pass the arguments to the result of this function to validate each argument
       validateItemsEither(func, expectedItems, validateArgument, functionName)

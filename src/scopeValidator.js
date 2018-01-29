@@ -33,7 +33,7 @@ module.exports.vMergeScope = R.curry((scope, objct) => {
   const actualValues = toValues(objct);
   // Call validateItemsEither and then throw if the Either is an Either.Left, meaning an error occured
   return R.compose(
-    mappedThrowIfLeft(({obj, prop, expected, actual, error: {stack}}) => `${prettyFormat(obj)}, Requires ${prop} to equal ${prettyFormat(expected)}, but got ${prettyFormat(actual)}, stack: ${stack}`),
+    mappedThrowIfLeft(({obj, prop, expected, actual, error: {stack}}) => `${prettyFormat(obj)}, Requires ${prop} to equal ${prettyFormat(expected)}, but got ${prettyFormat(actual)}, Stack: ${stack}`),
     // Pass actual as variadic arguments tot he resulting function of validateItemsEither
     // so we can dump the object in an Error message
     R.apply(validateItemsEither(

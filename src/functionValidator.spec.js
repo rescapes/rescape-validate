@@ -1,6 +1,7 @@
 const R = require('ramda');
 const {v} = require('./functionValidator');
 const PropType = require('prop-types');
+const {expectValidationError} = require('./validatorHelpers');
 const prettyFormat = require('pretty-format');
 
 /**
@@ -40,14 +41,15 @@ describe('functionValidator', () => {
   });
 
   test('argument as type validator failing', () => {
+    const errors = expectValidationError(() => validateTypesFunc(null, 1, null));
     expect(
-      () => validateTypesFunc(null, 1, null)
-    ).toThrow(
-      R.join(', ', [
+      errors
+    ).toEqual(
+      [
         'Function funky, Requires type as one of String, but got null',
         'Function funky, Requires ret as one of Object, String, but got 1',
         'Function funky, Requires obj as one of Object, but got null'
-      ])
+      ]
     );
   });
 
@@ -55,7 +57,7 @@ describe('functionValidator', () => {
     ['type', PropType.string.isRequired],
     ['ret', PropType.oneOfType([PropType.object, PropType.string])],
     ['obj', PropType.object.isRequired]
-    ], 'funky');
+  ], 'funky');
 
   test('argument as propType validator successful', () => {
     const fooValidateFunc = validatePropTypesFunc('FOO', {foo: 'foo', bar: 'bar'});
@@ -67,14 +69,15 @@ describe('functionValidator', () => {
   });
 
   test('argument as propType validator failing', () => {
-    expect(
+    const errors = expectValidationError(
       () => validatePropTypesFunc(null, 1, null)
-    ).toThrow(
-      R.join(', ', [
-        'The location `type` is marked as required in `funky`, but its value is `null`.',
-        'Invalid location `ret` supplied to `funky`.',
-        'The location `obj` is marked as required in `funky`, but its value is `null`.'
-      ])
+    );
+    expect(errors).toEqual(
+      [
+        'Error: The location `type` is marked as required in `funky`, but its value is `null`.',
+        'Error: Invalid location `ret` supplied to `funky`.',
+        'Error: The location `obj` is marked as required in `funky`, but its value is `null`.'
+      ]
     );
   });
 
@@ -85,11 +88,12 @@ describe('functionValidator', () => {
       ['ret', PropType.oneOfType([PropType.object, PropType.string])],
       ['obj', PropType.object.isRequired]
     ];
-    expect(
+    const errors = expectValidationError(
       // Even though the declaration causes an error, it's not thrown until we try to call the function with args
       () => v(funky, expectedItems, 'funky')('dont', {matter: 'at all'})
-    ).toThrow(
-      `Function ${funky.name}: argument length ${R.length(funky)} is not matched by validators' length ${R.length(expectedItems)}:\n${prettyFormat(expectedItems)})`
     );
+    expect(errors).toEqual([
+      `Error: Function ${funky.name || '(unnamed)'}: argument length ${R.length(funky)} is not matched by validators' length ${R.length(expectedItems)}:\n${prettyFormat(expectedItems)})`
+    ]);
   });
 });

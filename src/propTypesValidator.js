@@ -69,7 +69,7 @@ const validateObjectEither = R.curry((itemValidator, componentName, expectedItem
 module.exports.vProps = R.curry((propTypes, componentName, props) =>
   R.compose(
     // If Either.Left, map each Error value within Either to a useful message and then throw
-    mappedThrowIfLeft(({propName, component, error: {message, stack}}) => `Failed ${propName} for ${componentName} type: ${message} stack: ${stack}`),
+    mappedThrowIfLeft(({propName, component, error: {message, stack}}) => `Failed ${propName} for ${componentName} type: ${message} Stack: ${stack}`),
     // Pass actual so we can dump the object in an Error message
     validateObjectEither(
       // Used to validate each prop
