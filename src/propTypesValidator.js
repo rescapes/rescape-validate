@@ -12,7 +12,7 @@
 const Validation = require('ramda-fantasy-validation');
 const R = require('ramda');
 const {Either} = require('ramda-fantasy');
-const {mappedThrowIfLeft} = require('rescape-ramda').throwing;
+const {mappedThrowIfLeft} = require('rescape-ramda')
 
 /**
  * Validates each key/value of an object against the expectedItems

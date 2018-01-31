@@ -11,7 +11,7 @@
 
 const Validation = require('ramda-fantasy-validation');
 const R = require('ramda');
-const {mappedThrowIfLeft} = require('rescape-ramda').throwing;
+const {mappedThrowIfLeft} = require('rescape-ramda');
 const prettyFormat = require('pretty-format');
 const {validateItemsEither} = require('./validatorHelpers');
 
