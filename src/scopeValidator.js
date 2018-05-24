@@ -76,7 +76,7 @@ const validateProp = R.curry((obj, prop, expected, actual) =>
       let error = null;
       try {
         throw new Error('Validation error');
-      } catch(e) {
+      } catch (e) {
         error = e;
       }
       return Validation.failure([
