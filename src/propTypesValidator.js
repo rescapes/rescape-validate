@@ -11,8 +11,8 @@
 
 const Validation = require('ramda-fantasy-validation');
 const R = require('ramda');
-const {Either} = require('ramda-fantasy');
-const {mappedThrowIfLeft} = require('rescape-ramda')
+const Result = require('folktale/result');
+const {mappedThrowIfResultError} = require('rescape-ramda');
 
 /**
  * Validates each key/value of an object against the expectedItems
@@ -28,8 +28,8 @@ const {mappedThrowIfLeft} = require('rescape-ramda')
  * object containing the object if successful and an array of errors if unsuccessful
  */
 const validateObject = R.curry((itemValidator, componentName, expectedItems, props) => {
-  const length = R.length(R.keys(expectedItems));
-  return R.apply(R.useWith(
+    const length = R.length(R.keys(expectedItems));
+    return R.apply(R.useWith(
       // Lift the expected number of Validation objects.
       // If all successful just return the props in a Validation.Success
       Validation.liftAN(length, R.curryN(length, () => props)),
@@ -44,16 +44,16 @@ const validateObject = R.curry((itemValidator, componentName, expectedItems, pro
   }
 );
 
-// Like validateObject but converts Validation objects to Either
-const validateObjectEither = R.curry((itemValidator, componentName, expectedItems) =>
+// Like validateObject but converts Validation objects to Result
+const validateObjectResult = R.curry((itemValidator, componentName, expectedItems) =>
   R.compose(
-    // Then fold the Validation.Success|Failure into Either.Right|Left
+    // Then fold the Validation.Success|Failure into Result.Ok|Error
     // (predefined fold function has an error in it)
     // TODO it should be fixed now
     R.ifElse(
       obj => obj.isSuccess,
-      obj => Either.Right(obj.value),
-      obj => Either.Left(obj.value)),
+      obj => Result.Ok(obj.value),
+      obj => Result.Error(obj.value)),
     // Pass all the arguments to the result of this validator function
     validateObject(itemValidator, componentName, expectedItems)
   )
@@ -68,16 +68,18 @@ const validateObjectEither = R.curry((itemValidator, componentName, expectedItem
  */
 module.exports.vProps = R.curry((propTypes, componentName, props) =>
   R.compose(
-    // If Either.Left, map each Error value within Either to a useful message and then throw
-    mappedThrowIfLeft(({propName, component, error: {message, stack}}) => `Failed ${propName} for ${componentName} type: ${message} Stack: ${stack}`),
+    // Extract the Result.Ok
+    result => result.unsafeGet(),
+    // If Result.Error, map each Error value within Result to a useful message and then throw
+    mappedThrowIfResultError(({propName, component, error: {message, stack}}) => `Failed ${propName} for ${componentName} type: ${message} Stack: ${stack}`),
     // Pass actual so we can dump the object in an Error message
-    validateObjectEither(
+    validateObjectResult(
       // Used to validate each prop
       validatePropType,
       // function to check
       componentName,
       // expected types
-      propTypes,
+      propTypes
     )
   )(props)
 );
@@ -110,7 +112,7 @@ const validatePropType = module.exports.validatePropType = R.curry((componentNam
     let error = null;
     try {
       throw new Error('TypeChecker should be a function');
-    } catch(e) {
+    } catch (e) {
       error = e;
     }
     return Validation.failure([
@@ -134,7 +136,7 @@ const validatePropType = module.exports.validatePropType = R.curry((componentNam
     let error = null;
     try {
       throw new Error(propTypeError.message);
-    } catch(e) {
+    } catch (e) {
       error = e;
     }
     return Validation.failure([

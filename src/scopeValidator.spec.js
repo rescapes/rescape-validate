@@ -40,7 +40,7 @@ describe('scope validation', () => {
     const actual = {aardvark: 9, user: 5, project: 7};
     const errors = expectValidationError(
       () => vMergeScope(scope, actual)
-    )
+    );
     expect(errors).toEqual(
       [
         `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
@@ -53,12 +53,12 @@ describe('scope validation', () => {
     const actual = {aardvark: {id: 9}, user: {id: 5}, project: {id: 7}};
     const errors = expectValidationError(
       () => vMergeScope(scope, actual)
-    )
+    );
     expect(errors).toEqual(
       [
         `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
         `${prettyFormat(actual)}, Requires project to equal 2, but got 7`
       ]
-    )
+    );
   });
 });

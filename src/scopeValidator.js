@@ -11,9 +11,9 @@
 
 const Validation = require('ramda-fantasy-validation');
 const R = require('ramda');
-const {mappedThrowIfLeft} = require('rescape-ramda');
+const {mappedThrowIfResultError} = require('rescape-ramda');
 const prettyFormat = require('pretty-format');
-const {validateItemsEither} = require('./validatorHelpers');
+const {validateItemsResult} = require('./validatorHelpers');
 
 /**
  * Validates that the given object has properties matching the given scope, then merges the scope.
@@ -31,16 +31,18 @@ module.exports.vMergeScope = R.curry((scope, objct) => {
   const toValues = o => R.map(key => o[key], keys);
   const ln = R.length(keys);
   const actualValues = toValues(objct);
-  // Call validateItemsEither and then throw if the Either is an Either.Left, meaning an error occured
+  // Call validateItemsResult and then throw if the Result is an Result.Error, meaning an error occured
   return R.compose(
-    mappedThrowIfLeft(({obj, prop, expected, actual, error: {stack}}) => `${prettyFormat(obj)}, Requires ${prop} to equal ${prettyFormat(expected)}, but got ${prettyFormat(actual)}, Stack: ${stack}`),
-    // Pass actual as variadic arguments tot he resulting function of validateItemsEither
+    // If we got a Result.Ok extract the value. We won't get her if we throw on the previous statment
+    result => result.unsafeGet(),
+    mappedThrowIfResultError(({obj, prop, expected, actual, error: {stack}}) => `${prettyFormat(obj)}, Requires ${prop} to equal ${prettyFormat(expected)}, but got ${prettyFormat(actual)}, Stack: ${stack}`),
+    // Pass actual as variadic arguments to the resulting function of validateItemsResult
     // so we can dump the object in an Error message
-    R.apply(validateItemsEither(
+    values => R.apply(validateItemsResult(
       // The merge function
       // Convert object to pairs to make function expecting that many arguments and
       // returning the merge of the obj and scope
-      // This matches the expected signature of validateItemsEither, which expects
+      // This matches the expected signature of validateItemsResult, which expects
       // to apply the each argument to a function so that it can accumulate validation errors
       R.curryN(ln, () => R.merge(objct, scope)),
       // expected items
@@ -49,7 +51,7 @@ module.exports.vMergeScope = R.curry((scope, objct) => {
       validateProp,
       // Use the object as the descriptor
       objct
-    ))
+    ), values)
   )(actualValues);
 });
 

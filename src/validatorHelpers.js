@@ -11,12 +11,12 @@
 
 const Validation = require('ramda-fantasy-validation');
 const R = require('ramda');
-const {Either} = require('ramda-fantasy');
+const Result = require('folktale/result');
 const prettyFormat = require('pretty-format');
 
 
 /**
- * Pure function validation wrapper returning Either
+ * Pure function validation wrapper returning Result
  * @param {Function} func The function to validate against and call with the validated
  * items.
  * The expectedItems and actualItems must be the length of this function's number of arguments.
@@ -57,7 +57,7 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) =>
     ),
     // Return a function here since this will be called with the actual
     // parameters, which we'll ignore. It would be better to short-circuit
-    // the Compose call in vEither but I don't want to deal with this special Validation container
+    // the Compose call in vResult but I don't want to deal with this special Validation container
     len => () => {
       // Generate an error so we have a stack trace
       let error = null;
@@ -76,19 +76,19 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) =>
     }
   )(R.length(expectedItems));
 
-// See validateItems. This simply converts Validation to Either an maintains the curryability
-module.exports.validateItemsEither = (func, expectedItems, itemValidator, descriptor) =>
+// See validateItems. This simply converts Validation to Result an maintains the curryability
+module.exports.validateItemsResult = (func, expectedItems, itemValidator, descriptor) =>
   // Return a function that curries until all of func's arguments are received
   R.curryN(
     func.length,
     R.compose(
-      // Then fold the Validation.Success|Failure into Either.Right|Left
+      // Then fold the Validation.Success|Failure into Result.Ok|Error
       // (predefined fold function has an error in it)
       // TODO this should be fixed now
       R.ifElse(
         obj => obj.isSuccess,
-        obj => Either.Right(obj.value),
-        obj => Either.Left(obj.value)),
+        obj => Result.Ok(obj.value),
+        obj => Result.Error(obj.value)),
       // Pass all the arguments to the result of this validator function
       validateItems(func, expectedItems, itemValidator, descriptor)
     )

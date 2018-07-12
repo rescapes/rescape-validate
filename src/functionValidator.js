@@ -11,16 +11,16 @@
 
 const Validation = require('ramda-fantasy-validation');
 const R = require('ramda');
-const {mappedThrowIfLeft} = require('rescape-ramda');
+const {mappedThrowIfResultError} = require('rescape-ramda');
 const prettyFormat = require('pretty-format');
-const {validateItemsEither} = require('./validatorHelpers');
+const {validateItemsResult} = require('./validatorHelpers');
 const {vPropOfFunction} = require('./propTypesValidator');
 
 /**
  * Validation function that throws on Error. Since validation is always
  * a coding error, not an IO error, we should never expect the caller to handle it
  * @param {Function} func The function to validate
- * @param {[Array]} expectedItems Array of arrays. Each array contains the name of the argument and either an
+ * @param {[Array]} expectedItems Array of arrays. Each array contains the name of the argument and /Result.either an
  * array of allowed types (e.g. ['arg1', [Object, String]]) or a PropType function, such as.
  *  [
  *    arg1: PropType.String.isRequired,
@@ -37,16 +37,18 @@ module.exports.v = (func, expectedItems, functionName = func.name) =>
     func.length,
     // This compose will act upon the arguments passed to func
     R.compose(
-      // Then, If validation failed we'll get an Either.Left with an Error object in it. Parse that object into a
+      // Extract the Result.Ok
+      result => result.unsafeGet(),
+      // Then, If validation failed we'll get an Result.Error with an Error object in it. Parse that object into a
       // helpful message
-      mappedThrowIfLeft(({types, funcName, name, actual, error: {message, stack}}) =>
+      mappedThrowIfResultError(({types, funcName, name, actual, error: {message, stack}}) =>
         // Since we handle either Javascript types or PropTypes for validation, the two error objects spit out are
         // different. In the latter case we get a complete error message from the PropTypes module
         types ?
           `Function ${funcName}, Requires ${name} as one of ${R.join(', ', R.map(t => R.type(t()), types))}, but got ${prettyFormat(actual)}, Stack: ${stack}` :
           `Error: ${message}, Stack: ${stack}`),
       // First pass the arguments to the result of this function to validate each argument
-      validateItemsEither(func, expectedItems, validateArgument, functionName)
+      validateItemsResult(func, expectedItems, validateArgument, functionName)
     )
   );
 
