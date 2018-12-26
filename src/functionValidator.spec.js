@@ -93,7 +93,7 @@ describe('functionValidator', () => {
       () => v(funky, expectedItems, 'funky')('dont', {matter: 'at all'})
     );
     expect(errors).toEqual([
-      `Error: Function ${funky.name || '(unnamed)'}: argument length ${R.length(funky)} is not matched by validators' length ${R.length(expectedItems)}:\n${prettyFormat(expectedItems)})`
+      `Error: Function funky: argument length ${R.length(funky)} is not matched by validators' length ${R.length(expectedItems)}:\n${prettyFormat(expectedItems)})`
     ]);
   });
 });

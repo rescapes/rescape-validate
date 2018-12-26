@@ -61,7 +61,7 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) =>
     len => () => {
       // Generate an error so we have a stack trace
       let error = null;
-      const message = `Function ${func.name || '(unnamed)'}: argument length ${R.length(func)} is not matched by validators' length ${len}:\n${prettyFormat(expectedItems)})`;
+      const message = `Function ${func.name || descriptor}: argument length ${R.length(func)} is not matched by validators' length ${len}:\n${prettyFormat(expectedItems)})`;
       try {
         throw new Error(message);
       } catch (e) {
@@ -102,10 +102,9 @@ module.exports.validateItemsResult = (func, expectedItems, itemValidator, descri
 module.exports.expectValidationError = validatorCall => {
   try {
     validatorCall();
-  }
-  catch (e) {
+  } catch (e) {
     // Extract error message strings
     return R.map(str => R.slice(0, R.indexOf(', Stack', str), str), R.split('; ', e.message));
   }
-  throw Error("No validation error occured");
+  throw Error('No validation error occured');
 };
