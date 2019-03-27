@@ -9,11 +9,9 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-const Validation = require('ramda-fantasy-validation');
-const R = require('ramda');
-const Result = require('folktale/result');
-const prettyFormat = require('pretty-format');
-
+import Validation from 'ramda-fantasy-validation';
+import * as R from 'ramda';
+import Result from 'folktale/result';
 
 /**
  * Pure function validation wrapper returning Result
@@ -61,7 +59,7 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) =>
     len => () => {
       // Generate an error so we have a stack trace
       let error = null;
-      const message = `Function ${func.name || descriptor}: argument length ${R.length(func)} is not matched by validators' length ${len}:\n${prettyFormat(expectedItems)})`;
+      const message = `Function ${func.name || descriptor}: argument length ${R.length(func)} is not matched by validators' length ${len}:\n${JSON.stringify(expectedItems, null, 2)})`;
       try {
         throw new Error(message);
       } catch (e) {
@@ -77,7 +75,7 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) =>
   )(R.length(expectedItems));
 
 // See validateItems. This simply converts Validation to Result an maintains the curryability
-module.exports.validateItemsResult = (func, expectedItems, itemValidator, descriptor) =>
+export const validateItemsResult = (func, expectedItems, itemValidator, descriptor) =>
   // Return a function that curries until all of func's arguments are received
   R.curryN(
     func.length,
@@ -99,7 +97,7 @@ module.exports.validateItemsResult = (func, expectedItems, itemValidator, descri
  * @param {Function} validatorCall Unary function expected to throw a validation error
  * @return {String[]} Error messages
  **/
-module.exports.expectValidationError = validatorCall => {
+export const expectValidationError = validatorCall => {
   try {
     validatorCall();
   } catch (e) {

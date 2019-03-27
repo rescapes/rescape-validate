@@ -9,10 +9,10 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-const Validation = require('ramda-fantasy-validation');
-const R = require('ramda');
-const Result = require('folktale/result');
-const {mappedThrowIfResultError} = require('rescape-ramda');
+import Validation from 'ramda-fantasy-validation';
+import * as R from 'ramda';
+import Result from 'folktale/result';
+import {mappedThrowIfResultError} from 'rescape-ramda';
 
 /**
  * Validates each key/value of an object against the expectedItems
@@ -66,7 +66,7 @@ const validateObjectResult = R.curry((itemValidator, componentName, expectedItem
  * @param {*} props The object of props to validate
  * @returns {Object} The props
  */
-module.exports.vProps = R.curry((propTypes, componentName, props) =>
+export const vProps = R.curry((propTypes, componentName, props) =>
   R.compose(
     // Extract the Result.Ok
     result => result.unsafeGet(),
@@ -93,7 +93,7 @@ module.exports.vProps = R.curry((propTypes, componentName, props) =>
  * @returns {Object} The props
  *
  */
-module.exports.vPropOfFunction = R.curry((propType, funcName, name, actual) =>
+export const vPropOfFunction = R.curry((propType, funcName, name, actual) =>
   // Do a single PropType validation and map a success validation to the actual value that was tested
   validatePropType(funcName, name, propType, {[name]: actual}).map(_ => actual)
 );

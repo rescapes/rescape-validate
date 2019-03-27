@@ -9,12 +9,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-const Validation = require('ramda-fantasy-validation');
-const R = require('ramda');
-const {mappedThrowIfResultError} = require('rescape-ramda');
-const prettyFormat = require('pretty-format');
-const {validateItemsResult} = require('./validatorHelpers');
-const {vPropOfFunction} = require('./propTypesValidator');
+import Validation from 'ramda-fantasy-validation';
+import * as R from 'ramda';
+import {mappedThrowIfResultError} from 'rescape-ramda';
+import {validateItemsResult} from './validatorHelpers';
+import {vPropOfFunction} from './propTypesValidator';
 
 /**
  * Validation function that throws on Error. Since validation is always
@@ -30,7 +29,7 @@ const {vPropOfFunction} = require('./propTypesValidator');
  * @returns {Function} A function expecting the actual arguments to validate, which in turn returns
  * a results of the function call (if valid) or throws if not
  */
-module.exports.v = (func, expectedItems, functionName = func.name) =>
+export const v = (func, expectedItems, functionName = func.name) =>
   R.curryN(
     // Curry based on func length. This lets us return a curried function that can take each of func's actual
     // arguments in a curried manner
@@ -45,7 +44,7 @@ module.exports.v = (func, expectedItems, functionName = func.name) =>
         // Since we handle either Javascript types or PropTypes for validation, the two error objects spit out are
         // different. In the latter case we get a complete error message from the PropTypes module
         types ?
-          `Function ${funcName}, Requires ${name} as one of ${R.join(', ', R.map(t => R.type(t()), types))}, but got ${prettyFormat(actual)}, Stack: ${stack}` :
+          `Function ${funcName}, Requires ${name} as one of ${R.join(', ', R.map(t => R.type(t()), types))}, but got ${JSON.stringify(actual, null, 2)}, Stack: ${stack}` :
           `Error: ${message}, Stack: ${stack}`),
       // First pass the arguments to the result of this function to validate each argument
       validateItemsResult(func, expectedItems, validateArgument, functionName)
@@ -69,7 +68,7 @@ const validateArgument = R.curry((funcName, name, typesOrPropType, actual) =>
 
     // Validate that actual matches one of the types or else fail
     types => R.ifElse(
-      v => R.any(type => R.is(type, v), types),
+      vv => R.any(type => R.is(type, vv), types),
       Validation.of,
       _ => {
         // Generate an error so we have a stack trace

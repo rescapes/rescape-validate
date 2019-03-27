@@ -8,11 +8,9 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-const R = require('ramda');
-const {vMergeScope} = require('./scopeValidator');
-const prettyFormat = require('pretty-format');
-const {expectValidationError} = require('./validatorHelpers');
-
+import * as R from 'ramda';
+import {vMergeScope} from './scopeValidator';
+import {expectValidationError} from './validatorHelpers';
 
 describe('scope validation', () => {
   const scope = {user: 1, project: 2};
@@ -43,8 +41,8 @@ describe('scope validation', () => {
     );
     expect(errors).toEqual(
       [
-        `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
-        `${prettyFormat(actual)}, Requires project to equal 2, but got 7`
+        `${JSON.stringify(actual, null, 2)}, Requires user to equal 1, but got 5`,
+        `${JSON.stringify(actual, null, 2)}, Requires project to equal 2, but got 7`
       ]
     );
   });
@@ -56,8 +54,8 @@ describe('scope validation', () => {
     );
     expect(errors).toEqual(
       [
-        `${prettyFormat(actual)}, Requires user to equal 1, but got 5`,
-        `${prettyFormat(actual)}, Requires project to equal 2, but got 7`
+        `${JSON.stringify(actual, null, 2)}, Requires user to equal 1, but got 5`,
+        `${JSON.stringify(actual, null, 2)}, Requires project to equal 2, but got 7`
       ]
     );
   });

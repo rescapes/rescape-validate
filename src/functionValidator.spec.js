@@ -1,8 +1,7 @@
-const R = require('ramda');
-const {v} = require('./functionValidator');
-const PropType = require('prop-types');
-const {expectValidationError} = require('./validatorHelpers');
-const prettyFormat = require('pretty-format');
+import {v} from './functionValidator';
+import PropType from 'prop-types';
+import {expectValidationError} from './validatorHelpers';
+import * as R from 'ramda';
 
 /**
  * Created by Andy Likuski on 2017.08.16
@@ -93,7 +92,7 @@ describe('functionValidator', () => {
       () => v(funky, expectedItems, 'funky')('dont', {matter: 'at all'})
     );
     expect(errors).toEqual([
-      `Error: Function funky: argument length ${R.length(funky)} is not matched by validators' length ${R.length(expectedItems)}:\n${prettyFormat(expectedItems)})`
+      `Error: Function funky: argument length ${R.length(funky)} is not matched by validators' length ${R.length(expectedItems)}:\n${JSON.stringify(expectedItems, null, 2)})`
     ]);
   });
 });

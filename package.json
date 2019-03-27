@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "clean": "rimraf lib dist es coverage",
+    "clear": "jest --clearCache",
     "lint": "eslint src",
     "test": "cross-env BABEL_ENV=commonjs jest",
     "test:watch": "yarn test -- --watch",
@@ -37,13 +38,13 @@
     "publish-minor": "yarn --new-version version minor && yarn publish"
   },
   "dependencies": {
-    "pretty-format": "^23.2.0",
+    "folktale": "^2.3.2",
     "prop-types": "^15.6.2",
     "ramda": "^0.25.0",
     "ramda-fantasy": "^0.8.0",
     "ramda-fantasy-validation": "^0.2.0",
-    "rescape-ramda": "^1.5.17",
-    "rollup-plugin-json": "^3.0.0"
+    "rescape-ramda": "^1.5.24",
+    "rollup-plugin-json": "^4.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

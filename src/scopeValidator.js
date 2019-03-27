@@ -9,11 +9,10 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-const Validation = require('ramda-fantasy-validation');
-const R = require('ramda');
-const {mappedThrowIfResultError} = require('rescape-ramda');
-const prettyFormat = require('pretty-format');
-const {validateItemsResult} = require('./validatorHelpers');
+import Validation from 'ramda-fantasy-validation';
+import * as R from 'ramda';
+import {mappedThrowIfResultError} from 'rescape-ramda';
+import {validateItemsResult} from './validatorHelpers';
 
 /**
  * Validates that the given object has properties matching the given scope, then merges the scope.
@@ -25,7 +24,7 @@ const {validateItemsResult} = require('./validatorHelpers');
  * ids match the scope (e.g. {..., user: {name: 'kenny', id: 123}, project: {name: 'friendly', id: 456})
  * @returns {Object} The merged obj with the scope, or throws if any validation fails
  */
-module.exports.vMergeScope = R.curry((scope, objct) => {
+export const vMergeScope = R.curry((scope, objct) => {
   const keys = R.keys(scope);
   const toPairs = o => R.map(key => [key, o[key]], keys);
   const toValues = o => R.map(key => o[key], keys);
@@ -35,7 +34,7 @@ module.exports.vMergeScope = R.curry((scope, objct) => {
   return R.compose(
     // If we got a Result.Ok extract the value. We won't get her if we throw on the previous statment
     result => result.unsafeGet(),
-    mappedThrowIfResultError(({obj, prop, expected, actual, error: {stack}}) => `${prettyFormat(obj)}, Requires ${prop} to equal ${prettyFormat(expected)}, but got ${prettyFormat(actual)}, Stack: ${stack}`),
+    mappedThrowIfResultError(({obj, prop, expected, actual, error: {stack}}) => `${JSON.stringify(obj, null, 2)}, Requires ${prop} to equal ${JSON.stringify(expected, null, 2)}, but got ${JSON.stringify(actual, null, 2)}, Stack: ${stack}`),
     // Pass actual as variadic arguments to the resulting function of validateItemsResult
     // so we can dump the object in an Error message
     values => R.apply(validateItemsResult(
