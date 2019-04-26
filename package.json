@@ -1,6 +1,6 @@
 {
   "name": "rescape-validate",
-  "version": "1.2.16",
+  "version": "1.2.17",
   "description": "Ramda validation utilities for the Rescape platform",
   "homepage": "https://www.rescapes.net/",
   "repository": "git@github.com:calocan/rescape-validate.git",
@@ -11,7 +11,7 @@
   "files": [
     "dist",
     "lib",
-    "es",
+    "esm",
     "src"
   ],
   "scripts": {
