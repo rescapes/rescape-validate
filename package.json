@@ -1,6 +1,6 @@
 {
   "name": "rescape-validate",
-  "version": "1.2.15",
+  "version": "1.2.16",
   "description": "Ramda validation utilities for the Rescape platform",
   "homepage": "https://www.rescapes.net/",
   "repository": "git@github.com:calocan/rescape-validate.git",
@@ -21,9 +21,7 @@
     "test": "cross-env BABEL_ENV=commonjs jest",
     "test:watch": "yarn test -- --watch",
     "test:cov": "yarn test -- --coverage",
-    "build:commonjs": "cross-env NODE_ENV=production BABEL_ENV=commonjs  node_modules/.bin/babel src --out-dir lib",
-    "build:es": "cross-env  NODE_ENV=production BABEL_ENV=es node_modules/.bin/babel src --out-dir es",
-    "build": "yarn run build:commonjs && yarn run build:es",
+    "build": "rollup -c",
     "prepare": "yarn run clean && yarn run lint && yarn test && yarn run build",
     "docs:clean": "rimraf _book",
     "docs:prepare": "gitbook install",
@@ -38,32 +36,39 @@
   "dependencies": {
     "folktale": "^2.3.2",
     "prop-types": "^15.6.2",
-    "ramda": "^0.25.0",
+    "ramda": "^0.26.1",
     "ramda-fantasy": "^0.8.0",
     "ramda-fantasy-validation": "^0.2.0",
-    "rescape-ramda": "^1.5.24",
-    "rollup-plugin-json": "^4.0.0"
+    "rescape-ramda": "^1.5.31"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "6.26.3",
-    "babel-jest": "^23.4.0",
-    "babel-loader": "7.1.5",
-    "babel-plugin-external-helpers": "^6.22.0",
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.3",
+    "@babel/plugin-transform-runtime": "^7.4.3",
+    "@babel/polyfill": "^7.0.0-beta.51",
+    "@babel/preset-env": "^7.0.0-beta.51",
+    "@babel/runtime": "^7.4.3",
+    "@types/jest": "^24.0.11",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^24.7.1",
     "babel-plugin-transform-es2015-modules-commonjs-simple": "^6.7.4",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.7.0",
+    "babelrc-rollup": "^3.0.0",
     "cross-env": "^5.2.0",
-    "eslint": "^5.1.0",
-    "eslint-plugin-jest": "^21.17.0",
-    "jest": "^23.4.0",
-    "jsdom": "^11.11.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-jest": "^22.5.1",
+    "jest": "^24.7.1",
+    "jsdom": "^15.0.0",
     "rimraf": "^2.6.2",
-    "rollup": "^0.62.0",
-    "rollup-plugin-babel": "^3.0.7",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-replace": "^2.0.0",
-    "rollup-plugin-uglify": "^4.0.0"
+    "rollup": "^1.10.1",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-commonjs": "9.3.4",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "1.4.0",
+    "rollup-plugin-node-resolve": "^4.2.3",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-terser": "^4.0.4",
+    "rollup-watch": "4.3.1"
   },
   "jest": {
     "modulePaths": [
@@ -91,54 +96,20 @@
     },
     "moduleFileExtensions": [
       "web.js",
-      "mjs",
       "js",
       "json",
       "web.jsx",
       "jsx",
-      "node"
+      "node",
+      "mjs"
     ]
   },
   "babel": {
+    "sourceMaps": true,
     "presets": [
-      [
-        "env",
-        {
-          "targets": {
-            "browsers": [
-              "ie >= 11"
-            ]
-          },
-          "exclude": [
-            "transform-async-to-generator"
-          ],
-          "modules": false,
-          "loose": true
-        }
-      ]
-    ],
-    "plugins": [
-      [
-        "transform-runtime",
-        {
-          "polyfill": false,
-          "regenerator": true
-        }
-      ]
+      "@babel/preset-env"
     ],
     "env": {
-      "commonjs": {
-        "presets": [
-          [
-            "env",
-            {
-              "targets": {
-                "node": "current"
-              }
-            }
-          ]
-        ]
-      },
       "test": {
         "plugins": [
           [
@@ -148,14 +119,13 @@
             }
           ],
           [
-            "transform-runtime",
+            "@babel/plugin-transform-runtime",
             {
-              "polyfill": false,
+              "helpers": true,
               "regenerator": true
             }
           ]
-        ],
-        "presets": []
+        ]
       }
     }
   }
