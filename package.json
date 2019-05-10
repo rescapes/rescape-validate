@@ -1,6 +1,6 @@
 {
   "name": "rescape-validate",
-  "version": "1.2.19",
+  "version": "1.2.20",
   "description": "Ramda validation utilities for the Rescape platform",
   "homepage": "https://www.rescapes.net/",
   "repository": "git@github.com:calocan/rescape-validate.git",
@@ -39,7 +39,7 @@
     "ramda": "^0.26.1",
     "ramda-fantasy": "^0.8.0",
     "ramda-fantasy-validation": "^0.2.0",
-    "rescape-ramda": "^1.5.37"
+    "rescape-ramda": "^1.5.38"
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",
