@@ -106,7 +106,7 @@ export const vPropOfFunction = R.curry((propType, funcName, name, actual) =>
  * @param {Object} props The object to validate
  * @returns {Validation} Validation success or failure
  */
-const validatePropType = module.exports.validatePropType = R.curry((componentName, propName, propType, props) => {
+export const validatePropType = R.curry((componentName, propName, propType, props) => {
   if (typeof (propType) !== 'function') {
     // Generate an error so we have a stack trace
     let error = null;
