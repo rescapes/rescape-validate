@@ -1,6 +1,6 @@
 {
   "name": "rescape-validate",
-  "version": "1.2.22",
+  "version": "1.2.23",
   "description": "Ramda validation utilities for the Rescape platform",
   "homepage": "https://www.rescapes.net/",
   "repository": "git@github.com:calocan/rescape-validate.git",
@@ -39,7 +39,7 @@
     "ramda": "^0.26.1",
     "ramda-fantasy": "^0.8.0",
     "ramda-fantasy-validation": "^0.2.0",
-    "rescape-ramda": "^1.5.77"
+    "rescape-ramda": "^1.5.78"
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",
@@ -50,13 +50,13 @@
     "@babel/runtime": "^7.4.4",
     "@types/jest": "^24.0.12",
     "babel-eslint": "^10.0.1",
-    "babel-jest": "^24.8.0",
+    "babel-jest": "^24.9.0",
     "babel-plugin-transform-es2015-modules-commonjs-simple": "^6.7.4",
     "babelrc-rollup": "^3.0.0",
     "cross-env": "^5.2.0",
     "eslint": "^6.1.0",
     "eslint-plugin-jest": "^22.5.1",
-    "jest": "^24.8.0",
+    "jest": "^24.9.0",
     "jsdom": "^15.0.0",
     "rimraf": "^3.0.0",
     "rollup": "^1.11.3",
