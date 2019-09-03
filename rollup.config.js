@@ -59,6 +59,7 @@ const configs = R.map(c => {
   },
 
   // ES for Browsers
+  /*
   {
     output: {
       dir: 'esm',
@@ -88,6 +89,7 @@ const configs = R.map(c => {
       })
     ])
   }
+   */
 ]);
 export default configs;
 
