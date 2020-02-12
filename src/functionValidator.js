@@ -29,27 +29,40 @@ import {vPropOfFunction} from './propTypesValidator';
  * @returns {Function} A function expecting the actual arguments to validate, which in turn returns
  * a results of the function call (if valid) or throws if not
  */
-export const v = (func, expectedItems, functionName = func.name) =>
-  R.curryN(
-    // Curry based on func length. This lets us return a curried function that can take each of func's actual
-    // arguments in a curried manner
-    func.length,
-    // This compose will act upon the arguments passed to func
-    R.compose(
-      // Extract the Result.Ok
-      result => result.unsafeGet(),
-      // Then, If validation failed we'll get an Result.Error with an Error object in it. Parse that object into a
-      // helpful message
-      mappedThrowIfResultError(({types, funcName, name, actual, error: {message, stack}}) =>
-        // Since we handle either Javascript types or PropTypes for validation, the two error objects spit out are
-        // different. In the latter case we get a complete error message from the PropTypes module
-        types ?
-          `Function ${funcName}, Requires ${name} as one of ${R.join(', ', R.map(t => R.type(t()), types))}, but got ${JSON.stringify(actual, null, 2)}, Stack: ${stack}` :
-          `Error: ${message}, Stack: ${stack}`),
-      // First pass the arguments to the result of this function to validate each argument
-      validateItemsResult(func, expectedItems, validateArgument, functionName)
-    )
-  );
+export const v = (func, expectedItems, functionName = func.name) => {
+  return (...args) => {
+    return R.curryN(
+      // Curry based on func length. This lets us return a curried function that can take each of func's actual
+      // arguments in a curried manner
+      func.length,
+      // This compose will act upon the arguments passed to func
+      (...a) => {
+        return R.compose(
+          // Extract the Result.Ok
+          result => {
+            return result.unsafeGet();
+          },
+          // Then, If validation failed we'll get an Result.Error with an Error object in it. Parse that object into a
+          // helpful message
+          result => mappedThrowIfResultError(
+            // Since we handle either Javascript types or PropTypes for validation, the two error objects spit out are
+            // different. In the latter case we get a complete error message from the PropTypes module
+            obj => {
+              const {types, funcName, name, actual, error: {message, stack}} = obj;
+              return typeof types !== 'undefined' ?
+                `Function ${funcName}, Requires ${name} as one of ${R.join(', ', R.map(t => R.type(t()), types))}, but got ${JSON.stringify(actual, null, 2)}, Stack: ${stack}` :
+                `Error: ${message}, Stack: ${stack}`;
+            }
+          )(result),
+          // First pass the arguments to the result of this function to validate each argument
+          (...aa) => {
+            return validateItemsResult(func, expectedItems, validateArgument, functionName)(...aa);
+          }
+        )(...a);
+      }
+    )(...args);
+  };
+};
 
 /**
  * Validates a function argument using Validation
@@ -62,7 +75,6 @@ export const v = (func, expectedItems, functionName = func.name) =>
  */
 const validateArgument = R.curry((funcName, name, typesOrPropType, actual) =>
   R.ifElse(
-
     // If javascript types they'll be in a array (e.g. [String, Number]
     R.is(Array),
 
@@ -75,7 +87,7 @@ const validateArgument = R.curry((funcName, name, typesOrPropType, actual) =>
         let error = null;
         try {
           throw new Error('Validation error');
-        } catch(e) {
+        } catch (e) {
           error = e;
         }
         return Validation.failure([

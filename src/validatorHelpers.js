@@ -75,22 +75,29 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) =>
   )(R.length(expectedItems));
 
 // See validateItems. This simply converts Validation to Result an maintains the curryability
-export const validateItemsResult = (func, expectedItems, itemValidator, descriptor) =>
+export const validateItemsResult = (func, expectedItems, itemValidator, descriptor) => {
   // Return a function that curries until all of func's arguments are received
-  R.curryN(
-    func.length,
-    R.compose(
-      // Then fold the Validation.Success|Failure into Result.Ok|Error
-      // (predefined fold function has an error in it)
-      // TODO this should be fixed now
-      R.ifElse(
-        obj => obj.isSuccess,
-        obj => Result.Ok(obj.value),
-        obj => Result.Error(obj.value)),
-      // Pass all the arguments to the result of this validator function
-      validateItems(func, expectedItems, itemValidator, descriptor)
-    )
-  );
+  return (...args) => {
+    return R.curryN(
+      func.length,
+      (...a) => {
+        return R.compose(
+          // Then fold the Validation.Success|Failure into Result.Ok|Error
+          // (predefined fold function has an error in it)
+          o => {
+            return R.ifElse(
+              obj => obj.isSuccess,
+              obj => Result.Ok(obj.value),
+              obj => Result.Error(obj.value)
+            )(o);
+          },
+          // Pass all the arguments to the result of this validator function
+          (...aa) => validateItems(func, expectedItems, itemValidator, descriptor)(...aa)
+        )(...a);
+      }
+    )(...args);
+  };
+};
 
 /**
  * Test helper to extract validation error messages
