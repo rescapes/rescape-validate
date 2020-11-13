@@ -12,6 +12,7 @@
 import Validation from 'ramda-fantasy-validation';
 import * as R from 'ramda';
 import Result from 'folktale/result';
+import * as util from 'util';
 
 /**
  * Pure function validation wrapper returning Result
@@ -40,26 +41,53 @@ import Result from 'folktale/result';
  * pass or a Validation.failure with messages for all of the
  * failing validations
  */
-const validateItems = (func, expectedItems, itemValidator, descriptor) =>
+const validateItems = (func, expectedItems, itemValidator, descriptor) => {
   // useWith returns a function that expects sequence, in this case the actual parameters to validate.
   // Each expected parameter value is given to a curried validate function as the value parameter (the forth
   // value of the itemValidator)
   // useWith applies the results of all the validate calls to Validation.liftAN,
   // which in turn returns a Validation.failure or else calling func and wrapping the result in a Validation.success
-  R.ifElse(
-    R.equals(R.length(func)),
-    // Return this function, which expects the pairs of items
-    len => R.useWith(
-      Validation.liftAN(len, func),
-      R.map(([expectedKey, expectedValue]) => itemValidator(descriptor, expectedKey, expectedValue), expectedItems)
+  const validator = R.ifElse(
+    itemsLength => R.and(
+      R.equals(R.length(func), itemsLength),
+      R.equals(R.length(expectedItems), itemsLength)
     ),
+    // Return this function, which expects the pairs of items
+    len => (...a) => {
+      // Fail if the argumnet length is wrong
+      if (R.not(R.equals(R.length(a), R.length(expectedItems)))) {
+        const message = `For function ${descriptor} wrong number of arguments ${R.length(a)} provided. Expected ${R.length(expectedItems)}. Args provided: ${util.inspect(a)}`;
+        return Validation.failure([
+          {
+            message,
+            error: new Error(message)
+          }
+        ]);
+      }
+      // Check the type of each arg
+      const successFailure = R.useWith(
+        Validation.liftAN(len, func),
+        R.map(([expectedKey, expectedValue]) => itemValidator(descriptor, expectedKey, expectedValue), expectedItems)
+      )(...a);
+      // Failed if anything weird happened
+      if (typeof successFailure.value === 'undefined') {
+        const message = `For function ${descriptor} unacceptable undefined returned value ${JSON.stringify(successFailure)}`;
+        return Validation.failure([
+          {
+            message,
+            error: new Error(message)
+          }
+        ]);
+      }
+      return successFailure
+    },
     // Return a function here since this will be called with the actual
     // parameters, which we'll ignore. It would be better to short-circuit
     // the Compose call in vResult but I don't want to deal with this special Validation container
     len => () => {
       // Generate an error so we have a stack trace
       let error = null;
-      const message = `Function ${func.name || descriptor}: argument length ${R.length(func)} is not matched by validators' length ${len}:\n${JSON.stringify(expectedItems, null, 2)})`;
+      const message = `Function ${func.name || descriptor}: argument length ${R.length(func)} and/or expectedItems length ${R.length(expectedItems)} is not matched by validators' length ${len}:\n${JSON.stringify(expectedItems, null, 2)})`;
       try {
         throw new Error(message);
       } catch (e) {
@@ -73,6 +101,10 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) =>
       ]);
     }
   )(R.length(expectedItems));
+  return (...args) => {
+    return validator(...args);
+  };
+};
 
 // See validateItems. This simply converts Validation to Result an maintains the curryability
 export const validateItemsResult = (func, expectedItems, itemValidator, descriptor) => {

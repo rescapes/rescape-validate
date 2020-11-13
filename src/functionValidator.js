@@ -56,7 +56,8 @@ export const v = (func, expectedItems, functionName = func.name) => {
           )(result),
           // First pass the arguments to the result of this function to validate each argument
           (...aa) => {
-            return validateItemsResult(func, expectedItems, validateArgument, functionName)(...aa);
+            const result = validateItemsResult(func, expectedItems, validateArgument, functionName)(...aa);
+            return result;
           }
         )(...a);
       }

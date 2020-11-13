@@ -8,7 +8,7 @@ import * as R from 'ramda';
 
 const config = {
   input: [
-    'src/index.js',
+    'src/index.mjs',
   ],
   plugins: []
 };
@@ -41,6 +41,7 @@ const configs = R.map(c => {
     ])
   },
   // ES
+  /*
   {
     output: {
       dir: 'esm',
@@ -59,7 +60,6 @@ const configs = R.map(c => {
   },
 
   // ES for Browsers
-  /*
   {
     output: {
       dir: 'esm',
