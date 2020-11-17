@@ -12,7 +12,7 @@
 import Validation from 'ramda-fantasy-validation';
 import * as R from 'ramda';
 import Result from 'folktale/result';
-import {mappedThrowIfResultError} from 'rescape-ramda';
+import {mappedThrowIfResultError} from '@rescapes/ramda';
 
 /**
  * Validates each key/value of an object against the expectedItems

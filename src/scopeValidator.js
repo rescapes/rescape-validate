@@ -11,7 +11,7 @@
 
 import Validation from 'ramda-fantasy-validation';
 import * as R from 'ramda';
-import {mappedThrowIfResultError} from 'rescape-ramda';
+import {mappedThrowIfResultError} from '@rescapes/ramda';
 import {validateItemsResult} from './validatorHelpers';
 
 /**
