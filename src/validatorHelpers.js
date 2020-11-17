@@ -79,7 +79,7 @@ const validateItems = (func, expectedItems, itemValidator, descriptor) => {
           }
         ]);
       }
-      return successFailure
+      return successFailure;
     },
     // Return a function here since this will be called with the actual
     // parameters, which we'll ignore. It would be better to short-circuit
