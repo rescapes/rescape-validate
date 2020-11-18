@@ -1,6 +1,6 @@
-import {v} from './functionValidator';
+import {v} from './functionValidator.js';
 import PropType from 'prop-types';
-import {expectValidationError} from './validatorHelpers';
+import {expectValidationError} from './validatorHelpers.js';
 import * as R from 'ramda';
 
 /**

@@ -12,8 +12,8 @@
 import Validation from 'ramda-fantasy-validation';
 import * as R from 'ramda';
 import {mappedThrowIfResultError} from '@rescapes/ramda';
-import {validateItemsResult} from './validatorHelpers';
-import {vPropOfFunction} from './propTypesValidator';
+import {validateItemsResult} from './validatorHelpers.js';
+import {vPropOfFunction} from './propTypesValidator.js';
 
 /**
  * Validation function that throws on Error. Since validation is always

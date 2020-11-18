@@ -12,7 +12,7 @@
 import Validation from 'ramda-fantasy-validation';
 import * as R from 'ramda';
 import {mappedThrowIfResultError} from '@rescapes/ramda';
-import {validateItemsResult} from './validatorHelpers';
+import {validateItemsResult} from './validatorHelpers.js';
 
 /**
  * Validates that the given object has properties matching the given scope, then merges the scope.
