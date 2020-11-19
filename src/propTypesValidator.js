@@ -11,7 +11,7 @@
 
 import Validation from 'ramda-fantasy-validation';
 import * as R from 'ramda';
-import Result from 'folktale/result';
+import Result from 'folktale/result/index.js';
 import {mappedThrowIfResultError} from '@rescapes/ramda';
 
 /**
