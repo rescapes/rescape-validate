@@ -74,7 +74,7 @@ describe('functionValidator', () => {
     expect(errors).toEqual(
       [
         'Error: The location `type` is marked as required in `funky`, but its value is `null`.',
-        'Error: Invalid location `ret` supplied to `funky`.',
+        'Error: Invalid location `ret` supplied to `funky`, expected one of type [object, string].',
         'Error: The location `obj` is marked as required in `funky`, but its value is `null`.'
       ]
     );
