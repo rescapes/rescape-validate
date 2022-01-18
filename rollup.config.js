@@ -1,7 +1,4 @@
-import nodeResolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
-import replace from 'rollup-plugin-replace';
-import {terser} from 'rollup-plugin-terser';
 import commonjs from 'rollup-plugin-commonjs';
 import pkg from './package.json';
 import * as R from 'ramda';
@@ -15,7 +12,7 @@ const config = {
 const externals = ['symbol-observable', 'folktale/concurrency/task', 'folktale/result'];
 
 const configs = R.map(c => {
-  const x = R.merge(config, c);
+  const x = R.mergeRight(config, c);
   //console.warn(x);
   return x;
 }, [

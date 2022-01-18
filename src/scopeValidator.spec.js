@@ -20,7 +20,7 @@ describe('scope validation', () => {
     expect(
       vMergeScope(scope, actual)
     ).toEqual(
-      R.merge(actual, scope)
+      R.mergeRight(actual, scope)
     );
   });
 
@@ -30,7 +30,7 @@ describe('scope validation', () => {
     expect(
       vMergeScope(scope, actual)
     ).toEqual(
-      R.merge(actual, scope)
+      R.mergeRight(actual, scope)
     );
   });
 

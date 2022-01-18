@@ -43,7 +43,7 @@ export const vMergeScope = R.curry((scope, objct) => {
       // returning the merge of the obj and scope
       // This matches the expected signature of validateItemsResult, which expects
       // to apply the each argument to a function so that it can accumulate validation errors
-      R.curryN(ln, () => R.merge(objct, scope)),
+      R.curryN(ln, () => R.mergeRight(objct, scope)),
       // expected items
       toPairs(scope),
       // function to evaluate each item
